@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using static DTO.DTO;
 
@@ -70,14 +71,75 @@ namespace CSharp_Net8_RESTful_Query
                 Console.ReadKey();
 
                 /* customers - by country */
-                customersObj.customersByCountry(50, "Italy");
+                int maxRows = 50;
+                string Country = "Italy";
+
+                customers = customersObj.customersByCountry(maxRows, Country);
+
+                if (!customers.Success)
+                {
+                    Console.WriteLine("customersByCountry returned an error.");
+                    tErrorMessage = customers.ErrorMessage;
+
+                    Console.WriteLine($"{tErrorMessage}");
+                }
+                else if (customers.Success && (customers.Results == null || customers.Results.Count == 0))
+                {
+                    Console.WriteLine("customersByCountry returned an error.");
+                    tErrorMessage = customers.ErrorMessage;
+
+                    Console.WriteLine($"{tErrorMessage}");
+                }
+                else
+                {
+                    Console.WriteLine(Country);
+                    Console.WriteLine("-------------");
+
+                    foreach (var customer in customers.Results)
+                        Console.WriteLine($"CustomerID: {customer.CustomerId}, CompanyName: {customer.CompanyName}");
+                }
 
                 /* console output - continue */
                 Console.WriteLine("-------------------------");
                 Console.WriteLine("Press any key to continue ...");
                 Console.ReadKey();
 
-                customersObj.customersGroupedByCountry(50);
+                // customersObj.customersGroupedByCountry(50);
+                customers = customersObj.customersGroupedByCountry(50);
+
+                if (!customers.Success)
+                {
+                    Console.WriteLine("customersGroupedByCountry returned an error.");
+                    tErrorMessage = customers.ErrorMessage;
+
+                    Console.WriteLine($"{tErrorMessage}");
+                }
+                else if (customers.Success && (customers.Results == null || customers.Results.Count == 0))
+                {
+                    Console.WriteLine("customersGroupedByCountry returned an error.");
+                    tErrorMessage = customers.ErrorMessage;
+
+                    Console.WriteLine($"{tErrorMessage}");
+                }
+                else
+                {
+                    var groups = customers.Results
+                    .GroupBy(c => string.IsNullOrWhiteSpace(c.Country) ? "(Unknown)" : c.Country.Trim())
+                    .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var group in groups)
+                    {
+                        Console.WriteLine($"Country: {group.Key} (Count: {group.Count()})");
+
+                        foreach (var customer in group)
+                        {
+                            Console.WriteLine($"  CustomerID: {customer.CustomerId}, CompanyName: {customer.CompanyName}");
+                        }
+
+                        Console.WriteLine();
+                    }
+                }
+
                 customersObj = null;
             }
 

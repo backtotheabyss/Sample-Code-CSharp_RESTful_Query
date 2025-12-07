@@ -2,6 +2,7 @@
 using Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -53,82 +54,78 @@ namespace CSharp_Net8_RESTful_Query.Classes
                 }                
             }
         }
-        public void customersByCountry(int rows, string country)
+        public Response<Customer> customersByCountry(int rows, string country)
         {
             Response<Customer> customers = this.customersRetrieve(rows);
 
             if (!customers.Success)
             {
-                Console.WriteLine(customers.ErrorMessage);
-                Console.WriteLine("-------------------------");
-                Console.WriteLine("Press any key to continue ...");
-                Console.ReadKey();
-                return;
+                return new Response<Customer>
+                {
+                    Success = false,
+                    ErrorMessage = customers.ErrorMessage ?? "Error retrieving customers.",
+                    Results = new List<Customer>()
+                };
             }
 
-            // Si no hay resultados generales
             if (customers.Results == null || customers.Results.Count == 0)
             {
-                Console.WriteLine("No customers have been found.");
-                Console.WriteLine("-------------------------");
-                Console.WriteLine("Press any key to continue ...");
-                Console.ReadKey();
-                return;
+                return new Response<Customer>
+                {
+                    Success = false,
+                    ErrorMessage = "No customers have been found.",
+                    Results = new List<Customer>()
+                };
             }
 
-            var filtered = customers.Results
+            var result = customers.Results
                 .Where(c => !string.IsNullOrEmpty(c.Country) &&
                             string.Equals(c.Country, country, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            if (filtered.Count == 0)
+            return new Response<Customer>
             {
-                Console.WriteLine($"No customers have been found for country '{country}'.");
-            }
-            else
-            {
-                Console.WriteLine(filtered[0].Country);
-                Console.WriteLine("-------------");
-
-                foreach (var customer in filtered)
-                    Console.WriteLine($"CustomerID: {customer.CustomerId}, CompanyName: {customer.CompanyName}");
-            }
+                Success = true,
+                Results = result,
+                TotalCount = result.Count
+            };
         }
-        public void customersGroupedByCountry(int rows)
+        public Response<Customer> customersGroupedByCountry(int rows)
         {
             Response<Customer> customers = this.customersRetrieve(rows);
 
             if (!customers.Success)
             {
-                Console.WriteLine(customers.ErrorMessage);
-                Console.WriteLine("-------------------------");
-                Console.WriteLine("Press any key to continue ...");
-                Console.ReadKey();
-                return;
+                return new Response<Customer>
+                {
+                    Success = false,
+                    ErrorMessage = customers.ErrorMessage ?? "Error retrieving customers.",
+                    Results = new List<Customer>()
+                };
             }
 
             if (customers.Results == null || customers.Results.Count == 0)
             {
-                Console.WriteLine("No customers have been found.");
-                Console.WriteLine("-------------------------");
-                Console.WriteLine("Press any key to continue ...");
-                Console.ReadKey();
-                return;
+                return new Response<Customer>
+                {
+                    Success = false,
+                    ErrorMessage = "No customers have been found.",
+                    Results = new List<Customer>()
+                };
             }
 
             var groups = customers.Results
                 .GroupBy(c => string.IsNullOrWhiteSpace(c.Country) ? "(Unknown)" : c.Country.Trim())
-                .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase);
+                .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+                .SelectMany(g => g)
+                .ToList(); 
 
-            foreach (var group in groups)
+            return new Response<Customer>
             {
-                Console.WriteLine($"Country: {group.Key} (Count: {group.Count()})");
-                foreach (var customer in group)
-                {
-                    Console.WriteLine($"  CustomerID: {customer.CustomerId}, CompanyName: {customer.CompanyName}");
-                }
-                Console.WriteLine();
-            }
+                Success = true,
+                Results = groups,
+                TotalCount = groups.Count
+            };
         }
     }
 }
