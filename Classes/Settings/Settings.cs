@@ -12,8 +12,8 @@ namespace CSharp_Net8_RESTful_Query
     public class Settings
     {
         /*  settings */
-        public string settingName1 { get; set; } = string.Empty;
-        public string settingName2 { get; set; } = string.Empty;
+        public int maxRows { get; set; } = 0;
+        public string country { get; set; } = string.Empty;
         public string APIBaseURL { get; set; } = string.Empty;
         
         /* end settings */
@@ -24,8 +24,8 @@ namespace CSharp_Net8_RESTful_Query
             _configuration = configuration;
 
             /* settings */
-            settingName1 = _configuration["settingName1"] ?? string.Empty;
-            settingName2 = _configuration["settingName2"] ?? string.Empty;
+            maxRows = int.Parse(_configuration["maxRows"] ?? "0");
+            country = _configuration["Country"] ?? string.Empty;
             APIBaseURL = _configuration["APIBaseURL"] ?? string.Empty;
             /* end settings */
 

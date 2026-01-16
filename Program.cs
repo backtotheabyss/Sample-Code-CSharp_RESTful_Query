@@ -1,4 +1,4 @@
-﻿using CSharp_Net8_RESTful_Query.Classes;
+﻿using CSharp_Net8_RESTful_Query.Classes.Customers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -41,9 +41,13 @@ namespace CSharp_Net8_RESTful_Query
                     services.AddTransient<Customers>();
                 })
                 .Build();
+            
+            /* settings */
+            var settings = host.Services.GetRequiredService<Settings>();
 
             Customers customersObj = host.Services.GetRequiredService<Customers>();
-            Response<Customer> customers = customersObj.customersRetrieve(10);            
+            
+            Response<Customer> customers = customersObj.customersRetrieve(settings.maxRows);            
 
             if (!customers.Success)
             {
@@ -70,11 +74,8 @@ namespace CSharp_Net8_RESTful_Query
                 Console.WriteLine("Press any key to continue ...");
                 Console.ReadKey();
 
-                /* customers - by country */
-                int maxRows = 50;
-                string Country = "Italy";
-
-                customers = customersObj.customersByCountry(maxRows, Country);
+                /* customers - by country */               
+                customers = customersObj.customersByCountry(settings.maxRows, settings.country);
 
                 if (!customers.Success)
                 {
@@ -92,7 +93,7 @@ namespace CSharp_Net8_RESTful_Query
                 }
                 else
                 {
-                    Console.WriteLine(Country);
+                    Console.WriteLine(settings.country);
                     Console.WriteLine("-------------");
 
                     foreach (var customer in customers.Results)
@@ -105,7 +106,7 @@ namespace CSharp_Net8_RESTful_Query
                 Console.ReadKey();
 
                 // customersObj.customersGroupedByCountry(50);
-                customers = customersObj.customersGroupedByCountry(50);
+                customers = customersObj.customersGroupedByCountry(settings.maxRows);
 
                 if (!customers.Success)
                 {

@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using static DTO.DTO;
 
-namespace CSharp_Net8_RESTful_Query.Classes
+namespace CSharp_Net8_RESTful_Query.Classes.Customers
 {
     public class Customers
     {        
@@ -23,6 +23,9 @@ namespace CSharp_Net8_RESTful_Query.Classes
         public Response<Customer> customersRetrieve(int maxRows)
         {
             string url = $"{_settings.APIBaseURL}/Customers/entity/customers?rows={maxRows}";
+            
+            Console.WriteLine($"Calling {url} ...");
+            Console.WriteLine();
 
             using (var client = new HttpClient())
             {
@@ -56,7 +59,7 @@ namespace CSharp_Net8_RESTful_Query.Classes
         }
         public Response<Customer> customersByCountry(int rows, string country)
         {
-            Response<Customer> customers = this.customersRetrieve(rows);
+            Response<Customer> customers = customersRetrieve(rows);
 
             if (!customers.Success)
             {
@@ -92,7 +95,7 @@ namespace CSharp_Net8_RESTful_Query.Classes
         }
         public Response<Customer> customersGroupedByCountry(int rows)
         {
-            Response<Customer> customers = this.customersRetrieve(rows);
+            Response<Customer> customers = customersRetrieve(rows);
 
             if (!customers.Success)
             {
